@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — BCA Attendance System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #312e81 0%, #4f46e5 40%, #0891b2 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        /* Animated background orbs */
+        body::before, body::after {
+            content: '';
+            position: absolute;
+            border-radius: 50%;
+            opacity: .15;
+            animation: float 8s ease-in-out infinite;
+        }
+        body::before {
+            width: 500px; height: 500px;
+            background: #06b6d4;
+            top: -100px; right: -100px;
+        }
+        body::after {
+            width: 400px; height: 400px;
+            background: #818cf8;
+            bottom: -100px; left: -100px;
+            animation-delay: -4s;
+        }
+        @keyframes float {
+            0%, 100% { transform: translate(0,0) scale(1); }
+            50%       { transform: translate(30px,-30px) scale(1.05); }
+        }
+        .login-wrap {
+            position: relative;
+            z-index: 10;
+            width: 420px;
+        }
+        .login-badge {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .login-badge .icon-wrap {
+            width: 70px; height: 70px;
+            background: rgba(255,255,255,.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #fff;
+            box-shadow: 0 8px 32px rgba(0,0,0,.2);
+            margin-bottom: 12px;
+        }
+        .login-badge h1 {
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: -.5px;
+        }
+        .login-badge p {
+            color: rgba(255,255,255,.7);
+            font-size: .85rem;
+            margin-top: 4px;
+        }
+        .login-card {
+            background: rgba(255,255,255,.96);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 36px 36px 28px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.25);
+        }
+        .login-card h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 6px;
+        }
+        .login-card .sub {
+            color: #64748b;
+            font-size: .83rem;
+            margin-bottom: 24px;
+        }
+        .input-group {
+            margin-bottom: 16px;
+        }
+        .input-group label {
+            display: block;
+            font-size: .8rem;
+            font-weight: 600;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+        .input-wrap {
+            position: relative;
+        }
+        .input-wrap i {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: .9rem;
+        }
+        .input-wrap input {
+            width: 100%;
+            padding: 11px 12px 11px 38px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: .9rem;
+            font-family: inherit;
+            background: #f8fafc;
+            color: #1e293b;
+            transition: all .2s;
+        }
+        .input-wrap input:focus {
+            outline: none;
+            border-color: #4f46e5;
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(79,70,229,.12);
+        }
+        .btn-login {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #4f46e5, #0891b2);
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: inherit;
+            margin-top: 6px;
+            transition: opacity .2s, transform .15s;
+            letter-spacing: .3px;
+        }
+        .btn-login:hover { opacity: .92; transform: translateY(-1px); }
+        .btn-login:active { transform: translateY(0); }
+
+        .flash-area { margin-bottom: 16px; }
+        .flash-msg {
+            display: flex; align-items: center; gap: 8px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: .84rem;
+            margin-bottom: 6px;
+        }
+        .flash-danger  { background: #fee2e2; color: #991b1b; border-left: 3px solid #ef4444; }
+        .flash-success { background: #d1fae5; color: #065f46; border-left: 3px solid #10b981; }
+        .flash-warning { background: #fef3c7; color: #92400e; border-left: 3px solid #f59e0b; }
+
+        .hint-box {
+            margin-top: 20px;
+            padding: 14px;
+            background: #f1f5f9;
+            border-radius: 10px;
+            font-size: .78rem;
+            color: #475569;
+            line-height: 1.7;
+        }
+        .hint-box strong { color: #1e293b; }
+        .copyright {
+            text-align: center;
+            margin-top: 20px;
+            font-size: .75rem;
+            color: rgba(255,255,255,.5);
+        }
+    </style>
+</head>
+<body>
+<div class="login-wrap">
+    <div class="login-badge">
+        <div class="icon-wrap"><i class="fas fa-graduation-cap"></i></div>
+        <h1>BCA Attendance</h1>
+        <p>Online Attendance Management System</p>
+    </div>
+
+    <div class="login-card">
+        <h2>Welcome Back 👋</h2>
+        <p class="sub">Sign in to your account to continue</p>
+
+        <div class="flash-area">
+        {% with messages = get_flashed_messages(with_categories=True) %}
+        {% if messages %}{% for cat, msg in messages %}
+        <div class="flash-msg flash-{{ cat }}">
+            <i class="fas fa-exclamation-circle"></i> {{ msg }}
+        </div>
+        {% endfor %}{% endif %}
+        {% endwith %}
+        </div>
+
+        <form method="POST" action="/login">
+            <div class="input-group">
+                <label for="username">Username</label>
+                <div class="input-wrap">
+                    <i class="fas fa-user"></i>
+                    <input id="username" name="username" type="text"
+                           placeholder="ADMIN / Teacher1 / RegNo" required autofocus>
+                </div>
+            </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <div class="input-wrap">
+                    <i class="fas fa-lock"></i>
+                    <input id="password" name="password" type="password"
+                           placeholder="Enter your password" required>
+                </div>
+            </div>
+            <button class="btn-login" type="submit">
+                <i class="fas fa-sign-in-alt"></i> &nbsp;Sign In
+            </button>
+        </form>
+
+        <div class="hint-box">
+            <strong>Default Admin:</strong> Username: <code>ADMIN</code> &nbsp;|&nbsp; Password: <code>Admin12345</code><br>
+            <strong>Students:</strong> Username = Register Number &nbsp;|&nbsp; Password = Last 4 digits of Reg No<br>
+            <strong>Teachers:</strong> Created by Admin — check credentials from admin panel
+        </div>
+    </div>
+    <p class="copyright">© 2026 BCA Online Attendance Management System</p>
+</div>
+</body>
+</html>

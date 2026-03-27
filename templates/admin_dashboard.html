@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-tachometer-alt"></i> Admin Dashboard</h1>
+    <p>Welcome back, {{ session['name'] }} — {{ now.strftime('%A, %d %B %Y') if now else '' }}</p>
+</div>
+
+<!-- Stat Cards -->
+<div class="stat-grid">
+    <div class="stat-card">
+        <div class="stat-icon indigo"><i class="fas fa-user-graduate"></i></div>
+        <div>
+            <div class="stat-val">{{ total_students }}</div>
+            <div class="stat-lbl">Total Students</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon cyan"><i class="fas fa-chalkboard-teacher"></i></div>
+        <div>
+            <div class="stat-val">{{ total_teachers }}</div>
+            <div class="stat-lbl">Total Teachers</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green"><i class="fas fa-book"></i></div>
+        <div>
+            <div class="stat-val">{{ total_subjects }}</div>
+            <div class="stat-lbl">Total Subjects</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon amber"><i class="fas fa-clipboard-check"></i></div>
+        <div>
+            <div class="stat-val">{{ today_records }}</div>
+            <div class="stat-lbl">Today's Entries</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+        <div>
+            <div class="stat-val">{{ today_present }}</div>
+            <div class="stat-lbl">Present Today</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon red"><i class="fas fa-times-circle"></i></div>
+        <div>
+            <div class="stat-val">{{ today_absent }}</div>
+            <div class="stat-lbl">Absent Today</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon cyan"><i class="fas fa-briefcase"></i></div>
+        <div>
+            <div class="stat-val">{{ today_od }}</div>
+            <div class="stat-lbl">On Duty Today</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon purple"><i class="fas fa-plane-departure"></i></div>
+        <div>
+            <div class="stat-val">{{ today_leave }}</div>
+            <div class="stat-lbl">Leave Today</div>
+        </div>
+    </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1.6fr;gap:24px;">
+    <!-- Pie Chart -->
+    <div class="card">
+        <div class="card-title"><i class="fas fa-chart-pie"></i> Today's Attendance</div>
+        {% if today_records > 0 %}
+        <div style="position:relative;width:220px;margin:0 auto;">
+            <canvas id="todayPie"></canvas>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:15px;margin-top:16px;font-size:.82rem;">
+            <span><span class="dot dot-green"></span>Present ({{ today_present }})</span>
+            <span><span class="dot dot-red"></span>Absent ({{ today_absent }})</span>
+            <span><span class="dot" style="background:#06b6d4;"></span>OD ({{ today_od }})</span>
+            <span><span class="dot" style="background:#a855f7;"></span>Leave ({{ today_leave }})</span>
+        </div>
+        {% else %}
+        <div class="text-center" style="padding:40px 0;color:#94a3b8;">
+            <i class="fas fa-calendar-times" style="font-size:2.5rem;margin-bottom:12px;display:block;"></i>
+            <p>No attendance recorded today</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Quick Links & Trends -->
+    <div class="card">
+        <div class="card-title"><i class="fas fa-bolt"></i> Quick Actions</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+            <a href="/manage_students" class="btn btn-primary" style="justify-content:center;padding:14px;">
+                <i class="fas fa-user-plus"></i> Add Student
+            </a>
+            <a href="/manage_teachers" class="btn btn-success" style="justify-content:center;padding:14px;">
+                <i class="fas fa-user-tie"></i> Add Teacher
+            </a>
+            <a href="/manage_timetable" class="btn" style="background:#0891b2;color:#fff;justify-content:center;padding:14px;">
+                <i class="fas fa-calendar-plus"></i> Set Timetable
+            </a>
+            <a href="/manage_subjects" class="btn" style="background:#7c3aed;color:#fff;justify-content:center;padding:14px;">
+                <i class="fas fa-book-open"></i> Manage Subjects
+            </a>
+            <a href="/reports" class="btn btn-warning" style="justify-content:center;padding:14px;">
+                <i class="fas fa-chart-bar"></i> View Reports
+            </a>
+            <a href="/reset_password" class="btn btn-ghost" style="justify-content:center;padding:14px;">
+                <i class="fas fa-key"></i> Reset Password
+            </a>
+        </div>
+
+        <!-- Weekly trend Chart -->
+        {% if weekly %}
+        <hr class="section-sep">
+        <div class="card-title" style="margin-bottom:12px;"><i class="fas fa-chart-line"></i> Recent Activity (Last 7 Days)</div>
+        <canvas id="weeklyBar" height="100"></canvas>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+{% if today_records > 0 %}
+new Chart(document.getElementById('todayPie').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Present', 'Absent', 'OD', 'Leave'],
+        datasets: [{
+            data: [{{ today_present }}, {{ today_absent }}, {{ today_od }}, {{ today_leave }}],
+            backgroundColor: ['#10b981', '#ef4444', '#06b6d4', '#a855f7'],
+            borderWidth: 0,
+            hoverOffset: 6
+        }]
+    },
+    options: {
+        cutout: '65%',
+        plugins: { legend: { display: false } }
+    }
+});
+{% endif %}
+
+{% if weekly %}
+new Chart(document.getElementById('weeklyBar').getContext('2d'), {
+    type: 'bar',
+    data: {
+        labels: {{ weekly_labels | safe }},
+        datasets: [
+            { label: 'Present', data: {{ weekly_present | safe }}, backgroundColor: '#10b981', borderRadius: 4 },
+            { label: 'Absent',  data: {{ weekly_absent | safe }}, backgroundColor: '#ef4444', borderRadius: 4 },
+            { label: 'OD',      data: {{ weekly_od | safe }}, backgroundColor: '#06b6d4', borderRadius: 4 },
+            { label: 'Leave',   data: {{ weekly_leave | safe }}, backgroundColor: '#a855f7', borderRadius: 4 }
+        ]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            x: { stacked: false, grid: { display: false } },
+            y: { stacked: false, beginAtZero: true, ticks: { precision: 0 } }
+        },
+        plugins: {
+            legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } }
+        }
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

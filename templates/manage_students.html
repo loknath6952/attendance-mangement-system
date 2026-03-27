@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header flex justify-between items-center">
+    <div>
+        <h1><i class="fas fa-user-graduate"></i> Manage Students</h1>
+        <p>Add, edit, search, and remove student records</p>
+    </div>
+</div>
+
+<!-- ADD STUDENT FORM -->
+<div class="card">
+    <div class="card-title"><i class="fas fa-user-plus"></i> Register New Student</div>
+    <form action="/add_student" method="POST">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Register Number *</label>
+                <input type="text" name="reg_no" placeholder="e.g. 24BCA0001" required>
+            </div>
+            <div class="form-group">
+                <label>Full Name *</label>
+                <input type="text" name="name" placeholder="Student Full Name" required>
+            </div>
+            <div class="form-group">
+                <label>Year *</label>
+                <select name="year" required>
+                    <option value="">Select Year</option>
+                    <option value="1">1st Year</option>
+                    <option value="2">2nd Year</option>
+                    <option value="3">3rd Year</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Semester *</label>
+                <select name="semester" required>
+                    <option value="">Select Semester</option>
+                    <option value="1">Semester 1</option>
+                    <option value="2">Semester 2</option>
+                    <option value="3">Semester 3</option>
+                    <option value="4">Semester 4</option>
+                    <option value="5">Semester 5</option>
+                    <option value="6">Semester 6</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Section *</label>
+                <select name="section" required>
+                    <option value="">Section</option>
+                    {% for c in 'ABCDEFGHIJKL' %}
+                    <option value="{{ c }}">{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Shift *</label>
+                <select name="shift" required>
+                    <option value="">Shift</option>
+                    <option value="FN">FN (Forenoon)</option>
+                    <option value="AF">AF (Afternoon)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Contact Number</label>
+                <input type="text" name="contact" placeholder="Phone Number">
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" name="email" placeholder="student@email.com">
+            </div>
+        </div>
+        <div class="mt-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-plus-circle"></i> Register Student
+            </button>
+            <small class="text-muted" style="margin-left:12px;">
+                Default password = Last 4 digits of Register Number
+            </small>
+        </div>
+    </form>
+</div>
+
+<!-- SEARCH + LIST -->
+<div class="card">
+    <div class="flex justify-between items-center mb-2">
+        <div class="card-title" style="margin-bottom:0;"><i class="fas fa-users"></i> Student Records ({{ students|length }})</div>
+        <form class="search-bar" style="margin:0;" method="GET" action="/manage_students">
+            <input type="text" name="q" placeholder="Search by name or reg no..." value="{{ q }}" style="width:250px;">
+            <button type="submit" class="btn btn-primary btn-sm"><i class="fas fa-search"></i></button>
+            {% if q %}
+            <a href="/manage_students" class="btn btn-ghost btn-sm">Clear</a>
+            {% endif %}
+        </form>
+    </div>
+    <hr class="section-sep">
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Reg No</th><th>Name</th><th>Year / Sem</th>
+                    <th>Section</th><th>Shift</th><th>Contact</th><th>Email</th>
+                    <th style="text-align:center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% if students %}
+            {% for s in students %}
+            <tr>
+                <td><code style="font-size:.82rem;background:#f1f5f9;padding:2px 6px;border-radius:4px;">{{ s.reg_no }}</code></td>
+                <td class="fw-600">{{ s.name }}</td>
+                <td>
+                    <span class="badge badge-blue">Year {{ s.year }}</span>
+                    <span class="badge badge-gray" style="margin-left:4px;">Sem {{ s.semester }}</span>
+                </td>
+                <td>{{ s.section }}</td>
+                <td>
+                    <span class="badge {% if s.shift=='FN' %}badge-green{% else %}badge-yellow{% endif %}">{{ s.shift }}</span>
+                </td>
+                <td>{{ s.contact or '—' }}</td>
+                <td>{{ s.email or '—' }}</td>
+                <td style="text-align:center;">
+                    <a href="/edit_student/{{ s.reg_no }}" class="btn btn-ghost btn-sm btn-icon">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a href="/delete_student/{{ s.reg_no }}"
+                       onclick="return confirm('Delete {{ s.name }}? All their attendance will also be removed.')"
+                       class="btn btn-danger btn-sm btn-icon">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr><td colspan="8" class="text-center text-muted" style="padding:32px;">
+                {% if q %}No students found for "{{ q }}"{% else %}No students registered yet.{% endif %}
+            </td></tr>
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

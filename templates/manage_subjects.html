@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-book"></i> Manage Subjects</h1>
+    <p>All BCA subjects organized by year and semester</p>
+</div>
+
+<div class="card">
+    <div class="card-title"><i class="fas fa-plus-circle"></i> Add New Subject</div>
+    <form action="/add_subject" method="POST" style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+        <div class="form-group" style="flex:2;min-width:200px;">
+            <label>Subject Name *</label>
+            <input type="text" name="name" placeholder="e.g. Advanced Python" required>
+        </div>
+        <div class="form-group">
+            <label>Year *</label>
+            <select name="year" required>
+                <option value="1">1st Year</option>
+                <option value="2">2nd Year</option>
+                <option value="3">3rd Year</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Semester *</label>
+            <select name="semester" required>
+                {% for s in range(1,7) %}
+                <option value="{{ s }}">Semester {{ s }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-bottom:0;">
+            <i class="fas fa-plus"></i> Add Subject
+        </button>
+    </form>
+</div>
+
+{% for year in [1,2,3] %}
+<div class="card">
+    <div class="card-title">
+        <i class="fas fa-layer-group"></i>
+        {% if year==1 %}1st Year — Foundation{% elif year==2 %}2nd Year — Core Concepts{% else %}3rd Year — Advanced{% endif %}
+    </div>
+    {% for sem in range(1,7) %}
+    {% set sem_subjects = subjects | selectattr('year','eq',year) | selectattr('semester','eq',sem) | list %}
+    {% if sem_subjects %}
+    <div style="margin-bottom:16px;">
+        <div style="font-size:.78rem;font-weight:600;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">
+            Semester {{ sem }}
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            {% for sub in sem_subjects %}
+            <div style="display:flex;align-items:center;gap:8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:8px 14px;">
+                <i class="fas fa-book-open" style="color:#4f46e5;font-size:.8rem;"></i>
+                <span style="font-size:.88rem;font-weight:500;">{{ sub.name }}</span>
+                <a href="/delete_subject/{{ sub.id }}"
+                   onclick="return confirm('Delete subject: {{ sub.name }}?')"
+                   style="color:#ef4444;font-size:.75rem;margin-left:4px;">
+                    <i class="fas fa-times"></i>
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-chalkboard-teacher"></i> Teacher Dashboard</h1>
+    <p>{{ day }} — {% if period_label %}{{ period_label }}{% else %}No active period{% endif %}</p>
+</div>
+
+<!-- CURRENT STATUS BAR -->
+<div class="card" style="background:linear-gradient(135deg,#312e81,#4f46e5);color:white;padding:20px 24px;">
+    <div class="flex justify-between items-center">
+        <div>
+            <div style="font-size:.8rem;opacity:.7;text-transform:uppercase;letter-spacing:.5px;">Welcome</div>
+            <div style="font-size:1.2rem;font-weight:700;margin-top:2px;">Prof. {{ session['name'] }}</div>
+        </div>
+        <div style="text-align:right;">
+            <div style="font-size:.8rem;opacity:.7;">Today</div>
+            <div style="font-size:1rem;font-weight:600;margin-top:2px;">{{ day }}</div>
+        </div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:24px;flex-wrap:wrap;">
+        <div>
+            <div style="font-size:.75rem;opacity:.6;">Current Period</div>
+            <div style="font-weight:700;">
+                {% if current_period %}Period {{ current_period }} ({{ active_shift }})
+                {% else %}<span style="opacity:.6;">Outside Class Hours / Break</span>{% endif %}
+            </div>
+        </div>
+        {% if active %}
+        <div>
+            <div style="font-size:.75rem;opacity:.6;">Subject</div>
+            <div style="font-weight:700;">{{ active.sub_name }}</div>
+        </div>
+        <div>
+            <div style="font-size:.75rem;opacity:.6;">Class</div>
+            <div style="font-weight:700;">Year {{ active.year }} | Sec {{ active.section }} | {{ active.shift }}</div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if active and students %}
+<!-- ATTENDANCE FORM -->
+<div class="card">
+    <div class="card-title">
+        <i class="fas fa-clipboard-check"></i>
+        Mark Attendance — {{ active.sub_name }}
+        <span class="badge badge-blue" style="margin-left:8px;">{{ students|length }} students</span>
+    </div>
+    <form action="/submit_attendance" method="POST">
+        <input type="hidden" name="subject_id" value="{{ active.subject_id }}">
+        <input type="hidden" name="period" value="{{ active.period }}">
+        {% for s in students %}
+        <input type="hidden" name="reg_nos" value="{{ s.reg_no }}">
+        {% endfor %}
+
+        <!-- Mark All buttons -->
+        <div class="flex gap-2 mb-2">
+            <button type="button" onclick="markAll('P')" class="btn btn-success btn-sm">
+                <i class="fas fa-check-double"></i> Mark All Present
+            </button>
+            <button type="button" onclick="markAll('A')" class="btn btn-danger btn-sm">
+                <i class="fas fa-times"></i> Mark All Absent
+            </button>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>#</th><th>Reg No</th><th>Student Name</th>
+                        <th style="text-align:center;min-width:180px;">Attendance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for s in students %}
+                <tr id="row-{{ s.reg_no }}" style="transition:background .2s;">
+                    <td>{{ loop.index }}</td>
+                    <td><code style="font-size:.82rem;">{{ s.reg_no }}</code></td>
+                    <td class="fw-600">{{ s.name }}</td>
+                    <td style="text-align:center;">
+                        <div style="display:flex;justify-content:center;gap:16px;">
+                            <label class="att-label" style="cursor:pointer;display:flex;align-items:center;gap:6px;color:#059669;font-weight:600;">
+                                <input type="radio" name="status_{{ s.reg_no }}" value="P" checked
+                                       onchange="highlight('{{ s.reg_no }}','P')"> P
+                            </label>
+                            <label class="att-label" style="cursor:pointer;display:flex;align-items:center;gap:6px;color:#dc2626;font-weight:600;">
+                                <input type="radio" name="status_{{ s.reg_no }}" value="A"
+                                       onchange="highlight('{{ s.reg_no }}','A')"> A
+                            </label>
+                            <label class="att-label" style="cursor:pointer;display:flex;align-items:center;gap:6px;color:#0891b2;font-weight:600;">
+                                <input type="radio" name="status_{{ s.reg_no }}" value="OD"
+                                       onchange="highlight('{{ s.reg_no }}','OD')"> OD
+                            </label>
+                            <label class="att-label" style="cursor:pointer;display:flex;align-items:center;gap:6px;color:#9333ea;font-weight:600;">
+                                <input type="radio" name="status_{{ s.reg_no }}" value="L"
+                                       onchange="highlight('{{ s.reg_no }}','L')"> L
+                            </label>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <button type="submit" class="btn btn-success mt-2" style="width:100%;padding:14px;font-size:1rem;">
+            <i class="fas fa-save"></i> Save Attendance for {{ students|length }} Students
+        </button>
+    </form>
+</div>
+
+{% elif active is not none and not students %}
+<div class="card" style="text-align:center;padding:48px 20px;">
+    <i class="fas fa-users-slash" style="font-size:3rem;color:#94a3b8;display:block;margin-bottom:16px;"></i>
+    <h3 style="color:#64748b;">No students found for this class</h3>
+    <p class="text-muted mt-1">Year {{ active.year }} · Section {{ active.section }} · {{ active.shift }} shift has no registered students.</p>
+</div>
+
+{% else %}
+<div class="card" style="text-align:center;padding:52px 20px;color:#94a3b8;">
+    <i class="fas fa-calendar-times" style="font-size:3.5rem;display:block;margin-bottom:18px;"></i>
+    <h3 style="color:#64748b;font-size:1.2rem;">
+        {% if current_period %}
+            No Class Assigned for This Period
+        {% else %}
+            Attendance Portal is Closed
+        {% endif %}
+    </h3>
+    <p class="mt-1" style="font-size:.9rem;">
+        {% if current_period %}
+            Your timetable has no entry for Period {{ current_period }} ({{ active_shift }}) on {{ day }}.
+        {% else %}
+            Attendance can only be marked during active class periods.<br>
+            <strong>FN:</strong> 9:15–12:50 &nbsp;|&nbsp; <strong>AF:</strong> 13:30–17:05 (excluding breaks)
+        {% endif %}
+    </p>
+</div>
+{% endif %}
+
+<!-- RECENT HISTORY -->
+{% if history %}
+<div class="card">
+    <div class="card-title"><i class="fas fa-history"></i> Recent Submissions</div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Date</th><th>Period</th><th>Subject</th><th>Students Marked</th></tr></thead>
+            <tbody>
+            {% for h in history %}
+            <tr>
+                <td>{{ h.date }}</td>
+                <td>Period {{ h.period }}</td>
+                <td>{{ h.sub_name }}</td>
+                <td><span class="badge badge-blue">{{ h.count }}</span></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+function markAll(status) {
+    document.querySelectorAll('input[type=radio]').forEach(r => {
+        if(r.value === status) r.checked = true;
+    });
+    document.querySelectorAll('tr[id^="row-"]').forEach(row => {
+        if (status === 'P') row.style.background = '#f0fdf4';
+        else if (status === 'A') row.style.background = '#fff1f2';
+        else if (status === 'OD') row.style.background = '#ecfeff';
+        else if (status === 'L') row.style.background = '#faf5ff';
+    });
+}
+function highlight(reg, status) {
+    const row = document.getElementById('row-' + reg);
+    if(row) {
+        if (status === 'P') row.style.background = '#f0fdf4';
+        else if (status === 'A') row.style.background = '#fff1f2';
+        else if (status === 'OD') row.style.background = '#ecfeff';
+        else if (status === 'L') row.style.background = '#faf5ff';
+    }
+}
+// Init highlights on load (all present by default)
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('input[type=radio]:checked').forEach(r => {
+        highlight(r.name.replace('status_',''), r.value);
+    });
+});
+</script>
+{% endblock %}

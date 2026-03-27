@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-user-edit"></i> Edit Student</h1>
+    <p>Update student information for {{ student.reg_no }}</p>
+</div>
+<div class="card" style="max-width:700px;">
+    <div class="card-title"><i class="fas fa-id-card"></i> {{ student.reg_no }} — {{ student.name }}</div>
+    <form action="/edit_student/{{ student.reg_no }}" method="POST">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Full Name *</label>
+                <input type="text" name="name" value="{{ student.name }}" required>
+            </div>
+            <div class="form-group">
+                <label>Year *</label>
+                <select name="year" required>
+                    {% for y in [1,2,3] %}
+                    <option value="{{ y }}" {% if student.year==y %}selected{% endif %}>{{ y }}st/nd/rd Year</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Semester *</label>
+                <select name="semester" required>
+                    {% for sem in range(1,7) %}
+                    <option value="{{ sem }}" {% if student.semester==sem %}selected{% endif %}>Semester {{ sem }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Section *</label>
+                <select name="section" required>
+                    {% for c in 'ABCDEFGHIJKL' %}
+                    <option value="{{ c }}" {% if student.section==c %}selected{% endif %}>{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Shift *</label>
+                <select name="shift" required>
+                    <option value="FN" {% if student.shift=='FN' %}selected{% endif %}>FN (Forenoon)</option>
+                    <option value="AF" {% if student.shift=='AF' %}selected{% endif %}>AF (Afternoon)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Contact Number</label>
+                <input type="text" name="contact" value="{{ student.contact or '' }}">
+            </div>
+            <div class="form-group" style="grid-column:span 2;">
+                <label>Email Address</label>
+                <input type="email" name="email" value="{{ student.email or '' }}">
+            </div>
+        </div>
+        <div class="mt-2 flex gap-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+            <a href="/manage_students" class="btn btn-ghost">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-chalkboard-teacher"></i> Manage Teachers</h1>
+    <p>Add and manage teacher accounts</p>
+</div>
+
+<!-- ADD TEACHER -->
+<div class="card">
+    <div class="card-title"><i class="fas fa-user-plus"></i> Add New Teacher</div>
+    <form action="/add_teacher" method="POST" style="display:flex;gap:12px;align-items:flex-end;">
+        <div class="form-group" style="flex:1;">
+            <label>Full Name *</label>
+            <input type="text" name="name" placeholder="e.g. Dr. Ramesh Kumar" required>
+        </div>
+        <button type="submit" class="btn btn-success" style="margin-bottom:0;">
+            <i class="fas fa-plus-circle"></i> Add Teacher
+        </button>
+    </form>
+    <p class="text-muted mt-1" style="font-size:.8rem;">
+        Username and password are auto-generated (e.g. TEACHER1 / Teacher@1).
+        Credentials will be shown in the success message above.
+    </p>
+</div>
+
+<!-- TEACHER LIST -->
+<div class="card">
+    <div class="card-title"><i class="fas fa-list"></i> Teacher Accounts ({{ teachers|length }})</div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th><th>Name</th><th>Username</th><th>Status</th><th style="text-align:center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% if teachers %}
+            {% for t in teachers %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td class="fw-600">{{ t.name }}</td>
+                <td><code style="font-size:.82rem;background:#f1f5f9;padding:2px 8px;border-radius:4px;">{{ t.username }}</code></td>
+                <td>
+                    <span class="badge {% if t.status=='active' %}badge-green{% else %}badge-red{% endif %}">
+                        <span class="dot {% if t.status=='active' %}dot-green{% else %}dot-red{% endif %}"></span>
+                        {{ t.status|capitalize }}
+                    </span>
+                </td>
+                <td style="text-align:center;">
+                    <a href="/edit_teacher/{{ t.id }}" class="btn btn-ghost btn-sm btn-icon" title="Edit">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a href="/toggle_status/{{ t.id }}" class="btn btn-warning btn-sm btn-icon"
+                       title="{% if t.status=='active' %}Deactivate{% else %}Activate{% endif %}">
+                        <i class="fas {% if t.status=='active' %}fa-user-slash{% else %}fa-user-check{% endif %}"></i>
+                    </a>
+                    <a href="/delete_teacher/{{ t.id }}"
+                       onclick="return confirm('Delete {{ t.name }}? This cannot be undone.')"
+                       class="btn btn-danger btn-sm btn-icon" title="Delete">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr><td colspan="5" class="text-center text-muted" style="padding:32px;">No teachers added yet.</td></tr>
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

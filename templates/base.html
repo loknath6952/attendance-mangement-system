@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BCA Attendance System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --primary:   #4f46e5;
+            --primary-d: #3730a3;
+            --accent:    #06b6d4;
+            --success:   #10b981;
+            --danger:    #ef4444;
+            --warning:   #f59e0b;
+            --bg:        #f1f5f9;
+            --card:      #ffffff;
+            --text:      #1e293b;
+            --muted:     #64748b;
+            --border:    #e2e8f0;
+            --sidebar-w: 240px;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* ── SIDEBAR ─────────────────────────────── */
+        .sidebar {
+            width: var(--sidebar-w);
+            min-height: 100vh;
+            background: linear-gradient(180deg, #312e81 0%, #4f46e5 60%, #06b6d4 100%);
+            color: white;
+            position: fixed;
+            top: 0; left: 0;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            box-shadow: 4px 0 20px rgba(0,0,0,.2);
+        }
+        .sidebar-logo {
+            padding: 24px 20px 16px;
+            border-bottom: 1px solid rgba(255,255,255,.15);
+        }
+        .sidebar-logo h2 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: -.3px;
+        }
+        .sidebar-logo span {
+            display: block;
+            font-size: .72rem;
+            color: rgba(255,255,255,.6);
+            margin-top: 2px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .sidebar-user {
+            padding: 14px 20px;
+            background: rgba(255,255,255,.08);
+            margin: 10px 12px;
+            border-radius: 10px;
+        }
+        .sidebar-user .role-badge {
+            display: inline-block;
+            font-size: .65rem;
+            padding: 2px 8px;
+            border-radius: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 4px;
+        }
+        .badge-admin   { background: #f59e0b; color: #1e293b; }
+        .badge-teacher { background: #10b981; color: #fff; }
+        .badge-student { background: #06b6d4; color: #fff; }
+        .sidebar-user p { font-size: .82rem; font-weight: 600; }
+
+        .sidebar nav { flex: 1; padding: 8px 0; overflow-y: auto; }
+        .nav-section {
+            font-size: .65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,.5);
+            padding: 14px 20px 4px;
+        }
+        .sidebar a {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 20px;
+            color: rgba(255,255,255,.8);
+            text-decoration: none;
+            font-size: .88rem;
+            font-weight: 500;
+            transition: all .2s;
+            border-left: 3px solid transparent;
+        }
+        .sidebar a:hover,
+        .sidebar a.active {
+            background: rgba(255,255,255,.12);
+            color: #fff;
+            border-left-color: #fff;
+        }
+        .sidebar a i { width: 18px; text-align: center; }
+        .sidebar-footer {
+            padding: 16px 20px;
+            border-top: 1px solid rgba(255,255,255,.15);
+        }
+        .sidebar-footer a {
+            display: flex; align-items: center; gap: 10px;
+            color: rgba(255,255,255,.7); text-decoration: none;
+            font-size: .85rem;
+            padding: 8px 0;
+            transition: color .2s;
+        }
+        .sidebar-footer a:hover { color: #fff; }
+
+        /* ── MAIN CONTENT ────────────────────────── */
+        .content {
+            margin-left: var(--sidebar-w);
+            width: calc(100% - var(--sidebar-w));
+            padding: 28px 32px;
+        }
+        .page-header {
+            margin-bottom: 24px;
+        }
+        .page-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        .page-header p {
+            color: var(--muted);
+            font-size: .9rem;
+            margin-top: 4px;
+        }
+
+        /* ── CARDS ───────────────────────────────── */
+        .card {
+            background: var(--card);
+            border-radius: 14px;
+            padding: 24px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.06);
+            margin-bottom: 24px;
+        }
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--text);
+        }
+        .card-title i { color: var(--primary); }
+
+        /* ── STAT CARDS ──────────────────────────── */
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: var(--card);
+            border-radius: 14px;
+            padding: 20px 22px;
+            box-shadow: 0 1px 4px rgba(0,0,0,.06);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .stat-icon {
+            width: 50px; height: 50px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.3rem;
+        }
+        .stat-icon.indigo  { background: #ede9fe; color: #4f46e5; }
+        .stat-icon.cyan    { background: #cffafe; color: #0891b2; }
+        .stat-icon.green   { background: #d1fae5; color: #059669; }
+        .stat-icon.amber   { background: #fef3c7; color: #d97706; }
+        .stat-icon.red     { background: #fee2e2; color: #dc2626; }
+        .stat-val { font-size: 1.7rem; font-weight: 700; line-height: 1; }
+        .stat-lbl { font-size: .78rem; color: var(--muted); margin-top: 3px; }
+
+        /* ── TABLES ──────────────────────────────── */
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+        thead tr { background: #f8fafc; }
+        th {
+            padding: 11px 14px;
+            text-align: left;
+            font-weight: 600;
+            font-size: .78rem;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: var(--muted);
+            border-bottom: 2px solid var(--border);
+        }
+        td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        tbody tr:hover { background: #f8fafc; }
+
+        /* ── FORMS ───────────────────────────────── */
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+        .form-group label { font-size: .8rem; font-weight: 500; color: var(--muted); }
+        input[type=text],
+        input[type=email],
+        input[type=number],
+        input[type=password],
+        select,
+        textarea {
+            padding: 9px 12px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: .88rem;
+            font-family: inherit;
+            background: #fafafa;
+            color: var(--text);
+            transition: border-color .2s;
+            width: 100%;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: #fff;
+        }
+
+        /* ── BUTTONS ─────────────────────────────── */
+        .btn {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 9px 18px;
+            border-radius: 8px;
+            font-size: .86rem;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+            transition: all .2s;
+            font-family: inherit;
+        }
+        .btn-primary { background: var(--primary); color: #fff; }
+        .btn-primary:hover { background: var(--primary-d); }
+        .btn-success { background: var(--success); color: #fff; }
+        .btn-danger  { background: var(--danger);  color: #fff; }
+        .btn-warning { background: var(--warning); color: #fff; }
+        .btn-ghost   { background: transparent; color: var(--muted); border: 1.5px solid var(--border); }
+        .btn-ghost:hover { background: var(--bg); }
+        .btn-sm { padding: 5px 12px; font-size: .78rem; }
+        .btn-icon { padding: 7px 10px; }
+
+        /* ── BADGES ──────────────────────────────── */
+        .badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: .72rem;
+            font-weight: 600;
+        }
+        .badge-green  { background: #d1fae5; color: #059669; }
+        .badge-yellow { background: #fef3c7; color: #b45309; }
+        .badge-red    { background: #fee2e2; color: #dc2626; }
+        .badge-blue   { background: #dbeafe; color: #1d4ed8; }
+        .badge-gray   { background: #f1f5f9; color: #64748b; }
+
+        /* ── PROGRESS BAR ────────────────────────── */
+        .progress-bar-wrap {
+            background: var(--border);
+            border-radius: 20px;
+            height: 8px;
+            width: 100%;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            border-radius: 20px;
+            transition: width .5s ease;
+        }
+        .pbar-green  { background: linear-gradient(90deg, #10b981, #34d399); }
+        .pbar-yellow { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+        .pbar-red    { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+        /* ── FLASH MESSAGES ──────────────────────── */
+        .flash-container { margin-bottom: 16px; }
+        .flash {
+            display: flex; align-items: center; gap: 10px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: .88rem;
+            margin-bottom: 8px;
+        }
+        .flash-success { background: #d1fae5; color: #065f46; border-left: 4px solid #10b981; }
+        .flash-danger  { background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444; }
+        .flash-info    { background: #dbeafe; color: #1e40af; border-left: 4px solid #3b82f6; }
+        .flash-warning { background: #fef3c7; color: #92400e; border-left: 4px solid #f59e0b; }
+
+        /* ── SEARCH BAR ──────────────────────────── */
+        .search-bar {
+            display: flex; gap: 8px; margin-bottom: 18px;
+        }
+        .search-bar input { flex: 1; }
+
+        /* ── STATUS DOT ──────────────────────────── */
+        .dot {
+            width: 9px; height: 9px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .dot-green  { background: #10b981; }
+        .dot-red    { background: #ef4444; }
+        .dot-yellow { background: #f59e0b; }
+
+        /* ── ALERTS ──────────────────────────────── */
+        .alert {
+            padding: 14px 18px;
+            border-radius: 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .alert-warning-box { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+        .alert-info-box    { background: #e0f2fe; color: #0c4a6e; border: 1px solid #7dd3fc; }
+        .alert i { font-size: 1.2rem; margin-top: 1px; }
+
+        /* ── SECTION DIVIDER ─────────────────────── */
+        .section-sep {
+            border: none;
+            border-top: 1.5px solid var(--border);
+            margin: 20px 0;
+        }
+
+        /* ── UTILITY ─────────────────────────────── */
+        .text-muted  { color: var(--muted); }
+        .text-center { text-align: center; }
+        .mt-1  { margin-top: 8px;  }
+        .mt-2  { margin-top: 16px; }
+        .mt-3  { margin-top: 24px; }
+        .mb-1  { margin-bottom: 8px;  }
+        .mb-2  { margin-bottom: 16px; }
+        .flex  { display: flex; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-2 { gap: 8px; }
+        .gap-3 { gap: 12px; }
+        .fw-600 { font-weight: 600; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .content { margin-left: 0; padding: 16px; }
+        }
+    </style>
+</head>
+<body>
+{% if session.get('user_id') %}
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <h2><i class="fas fa-graduation-cap"></i> BCA Attendance</h2>
+        <span>Management System</span>
+    </div>
+    <div class="sidebar-user">
+        {% set role = session.get('role','') %}
+        <span class="role-badge badge-{{ role }}">{{ role }}</span>
+        <p>{{ session.get('name','') }}</p>
+    </div>
+    <nav>
+        {% if session['role'] == 'admin' %}
+        <div class="nav-section">Admin Panel</div>
+        <a href="/admin_dashboard"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="/manage_students"><i class="fas fa-user-graduate"></i> Students</a>
+        <a href="/manage_teachers"><i class="fas fa-chalkboard-teacher"></i> Teachers</a>
+        <a href="/manage_subjects"><i class="fas fa-book"></i> Subjects</a>
+        <a href="/manage_timetable"><i class="fas fa-calendar-alt"></i> Timetable</a>
+        <div class="nav-section">Reports</div>
+        <a href="/reports"><i class="fas fa-chart-bar"></i> Attendance Report</a>
+        <a href="/export/excel"><i class="fas fa-file-excel"></i> Export Excel</a>
+        <a href="/export/pdf"><i class="fas fa-file-pdf"></i> Export PDF</a>
+        <div class="nav-section">Settings</div>
+        <a href="/reset_password"><i class="fas fa-key"></i> Reset Password</a>
+
+        {% elif session['role'] == 'teacher' %}
+        <div class="nav-section">Teacher Portal</div>
+        <a href="/teacher_dashboard"><i class="fas fa-home"></i> My Dashboard</a>
+
+        {% elif session['role'] == 'student' %}
+        <div class="nav-section">Student Portal</div>
+        <a href="/student_dashboard"><i class="fas fa-home"></i> My Attendance</a>
+        <a href="/student/export_pdf"><i class="fas fa-file-pdf"></i> Download Report</a>
+        {% endif %}
+    </nav>
+    <div class="sidebar-footer">
+        <a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+    </div>
+</aside>
+{% endif %}
+
+<main class="content">
+    {% with messages = get_flashed_messages(with_categories=True) %}
+    {% if messages %}
+    <div class="flash-container">
+        {% for cat, msg in messages %}
+        <div class="flash flash-{{ cat if cat in ['success','danger','warning','info'] else 'info' }}">
+            <i class="fas {% if cat=='success' %}fa-check-circle{% elif cat=='danger' %}fa-times-circle{% elif cat=='warning' %}fa-exclamation-triangle{% else %}fa-info-circle{% endif %}"></i>
+            {{ msg }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+</main>
+
+<script>
+// Highlight active sidebar link
+(function(){
+    const path = window.location.pathname;
+    document.querySelectorAll('.sidebar a').forEach(a => {
+        if(a.getAttribute('href') === path) a.classList.add('active');
+    });
+})();
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

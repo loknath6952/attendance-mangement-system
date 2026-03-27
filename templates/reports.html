@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header flex justify-between items-center">
+    <div>
+        <h1><i class="fas fa-chart-bar"></i> Attendance Reports</h1>
+        <p>View and export student attendance records</p>
+    </div>
+    <div class="flex gap-2">
+        <a href="/export/excel" class="btn btn-success"><i class="fas fa-file-excel"></i> Export Excel</a>
+        <a href="/export/pdf"   class="btn btn-danger"><i class="fas fa-file-pdf"></i> Export PDF</a>
+    </div>
+</div>
+
+<!-- FILTER FORM -->
+<div class="card">
+    <div class="card-title"><i class="fas fa-filter"></i> Filter Records</div>
+    <form method="GET" action="/reports" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+        <div class="form-group">
+            <label>Date From</label>
+            <input type="date" name="date_from" value="{{ sel_date_from }}">
+        </div>
+        <div class="form-group">
+            <label>Date To</label>
+            <input type="date" name="date_to" value="{{ sel_date_to }}">
+        </div>
+        <div class="form-group">
+            <label>Year</label>
+            <select name="year">
+                <option value="">All Years</option>
+                <option value="1" {% if sel_year==1 %}selected{% endif %}>1st Year</option>
+                <option value="2" {% if sel_year==2 %}selected{% endif %}>2nd Year</option>
+                <option value="3" {% if sel_year==3 %}selected{% endif %}>3rd Year</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Section</label>
+            <select name="section">
+                <option value="">All Sections</option>
+                {% for sec in sections %}
+                <option value="{{ sec }}" {% if sel_section==sec %}selected{% endif %}>{{ sec }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group" style="min-width:230px;">
+            <label>Subject</label>
+            <select name="subject_id">
+                <option value="">All Subjects</option>
+                {% for sub in subjects %}
+                <option value="{{ sub.id }}" {% if sel_sub==sub.id %}selected{% endif %}>[Y{{sub.year}}] {{ sub.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary"><i class="fas fa-filter"></i> Apply</button>
+        <a href="/reports" class="btn btn-ghost">Clear</a>
+    </form>
+</div>
+
+<div style="display:grid;grid-template-columns:250px 1fr;gap:24px;">
+    <!-- PIE CHART -->
+    <div class="card" style="text-align:center;">
+        <div class="card-title"><i class="fas fa-chart-pie"></i> Overall</div>
+        <canvas id="overallPie" style="max-width:180px;margin:0 auto;"></canvas>
+        <div style="margin-top:14px;font-size:.8rem;">
+            <div><span class="dot dot-green"></span>Present: {{ chart_p }}</div>
+            <div style="margin-top:4px;"><span class="dot dot-red"></span>Absent: {{ chart_a }}</div>
+            <div style="margin-top:4px;"><span class="dot" style="background:#06b6d4;"></span>OD: {{ chart_od }}</div>
+            <div style="margin-top:4px;"><span class="dot" style="background:#a855f7;"></span>Leave: {{ chart_lv }}</div>
+            {% set total = chart_p + chart_a %}
+            {% if total > 0 %}
+            <div style="margin-top:8px;font-weight:600;font-size:1rem;color:#4f46e5;">
+                {{ ((chart_p/total)*100)|round(1) }}% Overall
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- STUDENT TABLE -->
+    <div class="card">
+        <div class="card-title"><i class="fas fa-list"></i> Student Summary ({{ summary|length }})</div>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Reg No</th><th>Name</th><th>Year</th><th>Section</th>
+                        <th>Present</th><th>Total</th><th>OD</th><th>Leave</th><th>Attendance %</th><th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% if summary %}
+                {% for s in summary %}
+                <tr>
+                    <td><code style="font-size:.82rem;">{{ s.reg_no }}</code></td>
+                    <td class="fw-600">{{ s.name }}</td>
+                    <td>{{ s.year }}</td>
+                    <td>{{ s.section }}</td>
+                    <td><span class="badge badge-green">{{ s.present }}</span></td>
+                    <td>{{ s.total }}</td>
+                    <td><span class="badge" style="background:#cffafe;color:#083344;">{{ s.od }}</span></td>
+                    <td><span class="badge" style="background:#f3e8ff;color:#3b0764;">{{ s.lv }}</span></td>
+                    <td style="min-width:140px;">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <div class="progress-bar-wrap" style="flex:1;height:6px;">
+                                <div class="progress-bar pbar-{{ s.color }}" style="width:{{ s.pct }}%;"></div>
+                            </div>
+                            <span style="font-size:.82rem;font-weight:600;min-width:38px;">{{ s.pct }}%</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge badge-{{ s.color }}">
+                            {% if s.color=='green' %}✅ Good{% elif s.color=='yellow' %}⚠ Average{% else %}🔴 Low{% endif %}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% else %}
+                <tr><td colspan="10" class="text-center text-muted" style="padding:32px;">No records found.</td></tr>
+                {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+new Chart(document.getElementById('overallPie').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Present','Absent','OD','Leave'],
+        datasets: [{
+            data: [{{ chart_p }}, {{ chart_a }}, {{ chart_od }}, {{ chart_lv }}],
+            backgroundColor: ['#10b981','#ef4444','#06b6d4','#a855f7'],
+            borderWidth: 0, hoverOffset: 5
+        }]
+    },
+    options: { cutout: '60%', plugins: { legend: { display: false } } }
+});
+</script>
+{% endblock %}

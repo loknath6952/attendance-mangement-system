@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-calendar-alt"></i> Manage Timetable</h1>
+    <p>Assign teachers and subjects to periods, sections, and shifts</p>
+</div>
+
+<div class="card">
+    <div class="card-title"><i class="fas fa-plus-circle"></i> Add Timetable Entry</div>
+    <form action="/add_timetable" method="POST">
+        <div class="form-grid">
+            <div class="form-group">
+                <label>Day *</label>
+                <select name="day" required>
+                    {% for d in days %}
+                    <option>{{ d }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Period (1–4) *</label>
+                <select name="period" required>
+                    {% for p in range(1,5) %}
+                    <option value="{{ p }}">Period {{ p }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Shift *</label>
+                <select name="shift" required>
+                    <option value="FN">FN (Forenoon)</option>
+                    <option value="AF">AF (Afternoon)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Year *</label>
+                <select name="year" required>
+                    <option value="1">1st Year</option>
+                    <option value="2">2nd Year</option>
+                    <option value="3">3rd Year</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Section *</label>
+                <select name="section" required>
+                    {% for c in 'ABCDEFGHIJKL' %}
+                    <option value="{{ c }}">{{ c }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Teacher *</label>
+                <select name="teacher_id" required>
+                    <option value="">Select Teacher</option>
+                    {% for t in teachers %}
+                    <option value="{{ t.id }}">{{ t.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group" style="grid-column:span 2;">
+                <label>Subject *</label>
+                <select name="subject_id" required>
+                    <option value="">Select Subject</option>
+                    {% for s in subjects %}
+                    <option value="{{ s.id }}">[Y{{ s.year }} S{{ s.semester }}] {{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="mt-2">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Entry
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- TIMETABLE VIEW -->
+<div class="card">
+    <div class="card-title"><i class="fas fa-table"></i> Weekly Timetable ({{ timetable|length }} entries)</div>
+    {% if timetable %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Day</th><th>Shift</th><th>Period</th><th>Year / Section</th>
+                    <th>Subject</th><th>Teacher</th><th style="text-align:center;">Del</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% set days_order = ['Monday','Tuesday','Wednesday','Thursday','Friday'] %}
+            {% for item in timetable %}
+            <tr>
+                <td class="fw-600">{{ item.day }}</td>
+                <td>
+                    <span class="badge {% if item.shift=='FN' %}badge-blue{% else %}badge-yellow{% endif %}">
+                        {{ item.shift }}
+                    </span>
+                </td>
+                <td>Period {{ item.period }}</td>
+                <td>
+                    <span class="badge badge-blue">Yr {{ item.year }}</span>
+                    <span class="badge badge-gray" style="margin-left:4px;">Sec {{ item.section }}</span>
+                </td>
+                <td>{{ item.sname }}</td>
+                <td>{{ item.tname }}</td>
+                <td style="text-align:center;">
+                    <a href="/delete_timetable/{{ item.id }}"
+                       onclick="return confirm('Remove this timetable entry?')"
+                       class="btn btn-danger btn-sm btn-icon">
+                        <i class="fas fa-times"></i>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="text-center text-muted" style="padding:40px;">
+        <i class="fas fa-calendar-times" style="font-size:2.5rem;display:block;margin-bottom:12px;"></i>
+        No timetable entries yet. Add entries above.
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

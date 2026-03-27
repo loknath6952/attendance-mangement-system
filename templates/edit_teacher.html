@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="page-header">
+    <h1><i class="fas fa-user-edit"></i> Edit Teacher</h1>
+</div>
+<div class="card" style="max-width:500px;">
+    <div class="card-title"><i class="fas fa-chalkboard-teacher"></i> {{ teacher.username }}</div>
+    <form action="/edit_teacher/{{ teacher.id }}" method="POST">
+        <div class="form-group">
+            <label>Full Name *</label>
+            <input type="text" name="name" value="{{ teacher.name }}" required>
+        </div>
+        <div class="mt-2 flex gap-2">
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Update</button>
+            <a href="/manage_teachers" class="btn btn-ghost">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
